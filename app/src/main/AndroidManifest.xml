@@ -17,5 +17,8 @@
             </intent-filter>
         </activity>
     </application>
+    <uses-feature android:name="android.hardware.camera2" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>
