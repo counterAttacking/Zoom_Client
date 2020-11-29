@@ -1,8 +1,10 @@
 package com.kwhy.sundayzoom.features.camera;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -27,6 +29,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             // 미리보기를 holder가 관리
             this.camera.setPreviewDisplay(holder);
+            this.camera.setDisplayOrientation(this.getDegree());
             this.camera.startPreview();
         } catch (IOException e) {
             Log.d("CameraPreview", "Fail to create Preview : " + e.getMessage());
@@ -49,6 +52,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         try {
             this.camera.setPreviewDisplay(this.holder);
+            this.camera.setDisplayOrientation(this.getDegree());
             this.camera.startPreview();
         } catch (Exception e) {
             Log.d("CameraPreview", "Fail to create Preview : " + e.getMessage());
@@ -57,6 +61,27 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
+        try {
+            // 화면을 다시 그릴때, camera의 release가 제대로 이루어지지 않는 경우
+            // camera의 release를 강제로 실행
+            this.camera.release();
+        } catch (Exception ex) {
 
+        }
+    }
+
+    private int getDegree() {
+        Activity currentActivity = (Activity) (this.getContext());
+        int rotation = currentActivity.getWindowManager().getDefaultDisplay().getRotation();
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                return 0;
+            case Surface.ROTATION_180:
+                return 270;
+            case Surface.ROTATION_270:
+                return 180;
+            default:
+                return 90;
+        }
     }
 }
