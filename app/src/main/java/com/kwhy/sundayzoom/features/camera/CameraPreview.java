@@ -46,6 +46,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         try {
             this.camera.stopPreview();
+            this.camera.setPreviewCallback(null);
         } catch (Exception e) {
 
         }
@@ -90,6 +91,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void changeCamera(Camera newCamera) {
         try {
             this.camera.stopPreview();
+            this.camera.setPreviewCallback(null);
             this.camera.release();
             this.camera = null;
         } catch (Exception e) {
