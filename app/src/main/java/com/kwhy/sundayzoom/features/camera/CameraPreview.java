@@ -84,4 +84,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 return 90;
         }
     }
+
+    public void changeCamera(Camera newCamera) {
+        try {
+            this.camera.stopPreview();
+            this.camera.release();
+            this.camera = null;
+        } catch (Exception e) {
+
+        }
+
+        try {
+            newCamera.setPreviewDisplay(this.holder);
+            newCamera.setDisplayOrientation(this.getDegree());
+            newCamera.startPreview();
+            this.camera = newCamera;
+        } catch (Exception e) {
+            Log.d("CameraPreview", "Fail to create Preview : " + e.getMessage());
+        }
+    }
 }

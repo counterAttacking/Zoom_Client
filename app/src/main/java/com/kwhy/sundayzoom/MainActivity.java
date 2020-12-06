@@ -5,11 +5,13 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.FrameLayout;
 
 import com.kwhy.sundayzoom.features.camera.CameraManager;
@@ -17,6 +19,8 @@ import com.kwhy.sundayzoom.features.camera.CameraPreview;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CAMERA = 100001;
+    private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 100002;
+    private Camera camera;
     private CameraPreview cameraPreview;
 
     @Override
@@ -27,11 +31,15 @@ public class MainActivity extends AppCompatActivity {
         /*
         Android Version이 marshmallow이상인 경우
         앱 권한 요청을 진행을 하여 사용자가 런타임에 권한을 승인해야 합니다.
-        현재 SundayZoom이 요청하는 권한 : CAMERA
+        현재 SundayZoom이 요청하는 권한 : CAMERA, WRITE_EXTERNAL_STORAGE
          */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+                return;
+            }
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
                 return;
             }
         }
@@ -54,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         FrameLayout preview = findViewById(R.id.camera_preview);
         preview.addView(this.cameraPreview);
+        this.camera = camera;
     }
 
 
@@ -62,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case PERMISSION_REQUEST_CAMERA:
+            case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // 권한 승인이 처리가 된 경우 다시 그리기
                     recreate();
@@ -73,5 +83,11 @@ public class MainActivity extends AppCompatActivity {
             default:
                 break;
         }
+    }
+
+    public void changeCamera(View view) {
+        CameraManager manager = CameraManager.getCameraManager();
+        Camera camera = manager.getNextCamera();
+        this.cameraPreview.changeCamera(camera);
     }
 }
