@@ -3,7 +3,17 @@ package com.kwhy.sundayzoom.features.camera;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.os.Environment;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
 
 public class CameraManager {
@@ -56,6 +66,7 @@ public class CameraManager {
         return camera;
     }
 
+    // 전면 후면 카메라 선택
     public Camera getNextCamera() {
         Camera camera = null;
 
@@ -77,5 +88,62 @@ public class CameraManager {
         }
 
         return camera;
+    }
+
+    // 촬영
+    public void takeAndSaveImage(Camera camera) {
+        camera.takePicture(null, null, getTakePictureCallback());
+    }
+
+    // 파일 생성 Handler
+    private Camera.PictureCallback getTakePictureCallback() {
+        return new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                camera.startPreview();
+                File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                if (pictureFile == null) {
+                    Log.e("CameraManager", "Fail to create file");
+                    return;
+                }
+
+                try {
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+                    fos.write(data);
+                    fos.close();
+                } catch (FileNotFoundException e) {
+                    Log.e("CameraManager", "Fail to search file" + e.getMessage());
+                } catch (IOException e) {
+                    Log.e("CameraManager", "Fail to access file" + e.getMessage());
+                } catch (Exception e) {
+                    Log.e("CameraManager", "Fail to save image file" + e.getMessage());
+                }
+            }
+        };
+    }
+
+    // 이미지가 저장될 디렉토리를 생성하고 이미지 파일 저장
+    private static File getOutputMediaFile(int type) {
+        File mediaStorageDir = new File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "SundayZoomPictures"
+        );
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.e("CameraManager", "Fail to create file directory");
+                return null;
+            }
+        }
+
+        String timeStamp = new SimpleDateFormat("yyyyMMDDHHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
     }
 }

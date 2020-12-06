@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.kwhy.sundayzoom.features.camera.CameraManager;
 import com.kwhy.sundayzoom.features.camera.CameraPreview;
@@ -20,8 +21,8 @@ import com.kwhy.sundayzoom.features.camera.CameraPreview;
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CAMERA = 100001;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 100002;
-    private Camera camera;
-    private CameraPreview cameraPreview;
+    private static Camera camera;
+    private static CameraPreview cameraPreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,9 +86,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // 전면 후면 카메라 선택
     public void changeCamera(View view) {
         CameraManager manager = CameraManager.getCameraManager();
         Camera camera = manager.getNextCamera();
         this.cameraPreview.changeCamera(camera);
+        this.camera = camera;
+    }
+
+    // 사진 촬영
+    public void takePicture(View view) {
+        CameraManager cameraManager = CameraManager.getCameraManager();
+        cameraManager.takeAndSaveImage(this.camera);
+        Toast.makeText(this, "Save Completed", Toast.LENGTH_LONG).show();
     }
 }
