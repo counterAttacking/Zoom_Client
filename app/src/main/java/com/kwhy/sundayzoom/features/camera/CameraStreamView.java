@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.view.TextureView;
+import android.widget.FrameLayout;
 
 public class CameraStreamView extends TextureView implements CameraStreamCallback {
     private BitmapFactory.Options bitmapOption;
@@ -13,6 +14,10 @@ public class CameraStreamView extends TextureView implements CameraStreamCallbac
     public CameraStreamView(Context context) {
         super(context);
         this.bitmapOption = new BitmapFactory.Options();
+    }
+
+    public void initialize() {
+        this.setLayoutParams(new FrameLayout.LayoutParams(370, 270));
     }
 
     @Override

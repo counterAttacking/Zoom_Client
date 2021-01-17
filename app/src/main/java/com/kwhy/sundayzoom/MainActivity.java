@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.kwhy.sundayzoom.features.camera.CameraManager;
@@ -22,12 +23,17 @@ import com.kwhy.sundayzoom.features.camera.CameraPreview;
 import com.kwhy.sundayzoom.features.camera.CameraStreamView;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CAMERA = 100001;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 100002;
+
     private static Camera camera;
     private static CameraPreview cameraPreview;
+
+    private List<CameraStreamView> streamViewList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,28 +76,12 @@ public class MainActivity extends AppCompatActivity {
         preview.addView(this.cameraPreview);
         this.camera = camera;
 
-        FrameLayout preview2 = findViewById(R.id.camera_preview_second);
-        final CameraStreamView streamView = new CameraStreamView(this);
-
         camera.setPreviewCallback(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
-                Camera.Parameters parameters = camera.getParameters();
-                int width = parameters.getPreviewSize().width;
-                int height = parameters.getPreviewSize().height;
-
-                YuvImage yuvImage = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
-
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out);
-
-                byte[] bytes = out.toByteArray();
-
-                streamView.drawStream(bytes);
+                MainActivity.this.updateStreamView(data, camera);
             }
         });
-
-        preview2.addView(streamView);
     }
 
 
@@ -120,6 +110,13 @@ public class MainActivity extends AppCompatActivity {
         Camera camera = manager.getNextCamera();
         this.cameraPreview.changeCamera(camera);
         this.camera = camera;
+
+        camera.setPreviewCallback(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                MainActivity.this.updateStreamView(data, camera);
+            }
+        });
     }
 
     // 사진 촬영
@@ -127,5 +124,29 @@ public class MainActivity extends AppCompatActivity {
         CameraManager cameraManager = CameraManager.getCameraManager();
         cameraManager.takeAndSaveImage(this.camera);
         Toast.makeText(this, "Save Completed", Toast.LENGTH_LONG).show();
+    }
+
+    // 다른 화면 추가
+    public void addStreamView(View view) {
+        final CameraStreamView streamView = new CameraStreamView(this);
+        this.streamViewList.add(streamView);
+        LinearLayout streamLayout = findViewById(R.id.stream_list);
+        streamLayout.addView(streamView);
+    }
+
+    public void updateStreamView(byte[] data, Camera camera) {
+        Camera.Parameters parameters = camera.getParameters();
+        int width = parameters.getPreviewSize().width;
+        int height = parameters.getPreviewSize().height;
+
+        YuvImage yuvImage = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuvImage.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+
+        byte[] bytes = out.toByteArray();
+        for (CameraStreamView stream : this.streamViewList) {
+            stream.drawStream(bytes);
+        }
     }
 }
