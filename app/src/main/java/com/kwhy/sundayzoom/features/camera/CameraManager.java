@@ -146,4 +146,9 @@ public class CameraManager {
 
         return mediaFile;
     }
+    public boolean isFrontCamera(){
+        Camera.CameraInfo cameraInfo= new Camera.CameraInfo();
+        Camera.getCameraInfo(currentCamera, cameraInfo);
+        return cameraInfo.facing==Camera.CameraInfo.CAMERA_FACING_FRONT;
+    }
 }

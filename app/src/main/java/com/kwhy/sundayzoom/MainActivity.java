@@ -70,18 +70,28 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Camera camera = manager.getCamera();
-        this.cameraPreview = new CameraPreview(this, camera);
-
-        FrameLayout preview = findViewById(R.id.camera_preview);
-        preview.addView(this.cameraPreview);
-        this.camera = camera;
 
         camera.setPreviewCallback(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
                 MainActivity.this.updateStreamView(data, camera);
             }
+
         });
+
+        this.cameraPreview = new CameraPreview(this, camera);
+
+        FrameLayout preview = findViewById(R.id.camera_preview);
+        preview.addView(this.cameraPreview);
+        this.camera = camera;
+
+        final CameraStreamView streamView = new CameraStreamView(this);
+
+        this.streamViewList.add(streamView);
+
+        LinearLayout streamLayout = findViewById(R.id.stream_list);
+        streamLayout.addView(streamView);
+
     }
 
 
@@ -130,11 +140,13 @@ public class MainActivity extends AppCompatActivity {
     public void addStreamView(View view) {
         final CameraStreamView streamView = new CameraStreamView(this);
         this.streamViewList.add(streamView);
+
         LinearLayout streamLayout = findViewById(R.id.stream_list);
         streamLayout.addView(streamView);
     }
 
     public void updateStreamView(byte[] data, Camera camera) {
+        CameraManager manager = CameraManager.getCameraManager();
         Camera.Parameters parameters = camera.getParameters();
         int width = parameters.getPreviewSize().width;
         int height = parameters.getPreviewSize().height;
@@ -146,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] bytes = out.toByteArray();
         for (CameraStreamView stream : this.streamViewList) {
-            stream.drawStream(bytes);
+            stream.drawStream(bytes,parameters.getJpegThumbnailSize(),manager.isFrontCamera());
         }
     }
 }
