@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
         byte[] bytes = out.toByteArray();
         for (CameraStreamView stream : this.streamViewList) {
-            stream.drawStream(bytes,parameters.getJpegThumbnailSize(),manager.isFrontCamera());
+            stream.drawStream(bytes, parameters.getJpegThumbnailSize(), manager.isFrontCamera());
         }
     }
 }

@@ -88,6 +88,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 return 90;
         }
     }
+
     // 전면 후면 카메라가 변경이 되었을 경우 내 쪽 미리보기 화면 다시 설정
     public void changeCamera(Camera newCamera) {
         try {
