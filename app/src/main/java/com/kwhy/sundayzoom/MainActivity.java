@@ -14,6 +14,7 @@ import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -71,6 +72,12 @@ public class MainActivity extends AppCompatActivity {
 
         Camera camera = manager.getCamera();
 
+        this.cameraPreview = new CameraPreview(this, camera);
+        FrameLayout preview = findViewById(R.id.camera_preview);
+        preview.addView(this.cameraPreview);
+
+        this.addStreamView(null);
+
         camera.setPreviewCallback(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
@@ -79,21 +86,8 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        this.cameraPreview = new CameraPreview(this, camera);
-
-        FrameLayout preview = findViewById(R.id.camera_preview);
-        preview.addView(this.cameraPreview);
         this.camera = camera;
-
-        final CameraStreamView streamView = new CameraStreamView(this);
-
-        this.streamViewList.add(streamView);
-
-        LinearLayout streamLayout = findViewById(R.id.stream_list);
-        streamLayout.addView(streamView);
-
     }
-
 
     // 앱 권한 요청에 대한 사용자의 결과를 처리
     @Override
@@ -136,13 +130,30 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Save Completed", Toast.LENGTH_LONG).show();
     }
 
-    // 다른 화면 추가
+    // "Add screen"으로 표시되는 Button을 누르면 다른 화면 추가
     public void addStreamView(View view) {
         final CameraStreamView streamView = new CameraStreamView(this);
         this.streamViewList.add(streamView);
 
+        /*
+        화면을 추가하면 stream_list에
+        다른 사용자를 보여주는 streamView와 나가기 기능을 추가한 Button이 동시에 담겨있는
+        userView라는 LinearLayout을 화면에 출력
+         */
         LinearLayout streamLayout = findViewById(R.id.stream_list);
-        streamLayout.addView(streamView);
+        final LinearLayout userView = new LinearLayout(this);
+        userView.setOrientation(LinearLayout.VERTICAL);
+        Button closeButton = new Button(this);
+        userView.addView(streamView);
+        userView.addView(closeButton);
+        streamLayout.addView(userView);
+        closeButton.setText("Exit");
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MainActivity.this.removeStreamView(userView, streamView);
+            }
+        });
     }
 
     public void updateStreamView(byte[] data, Camera camera) {
@@ -160,5 +171,11 @@ public class MainActivity extends AppCompatActivity {
         for (CameraStreamView stream : this.streamViewList) {
             stream.drawStream(bytes, parameters.getJpegThumbnailSize(), manager.isFrontCamera());
         }
+    }
+
+    public void removeStreamView(LinearLayout view, CameraStreamView streamView) {
+        LinearLayout streamLayout = findViewById(R.id.stream_list);
+        streamLayout.removeViewInLayout(view);
+        this.streamViewList.remove(streamView);
     }
 }

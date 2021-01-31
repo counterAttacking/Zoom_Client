@@ -36,7 +36,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-
     // 화면이 90도, 180도 등 다양한 방향으로 움직이는 경우 화면을 다시 출력하도록
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {
@@ -109,5 +108,4 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.d("CameraPreview", "Fail to create Preview : " + e.getMessage());
         }
     }
-
 }

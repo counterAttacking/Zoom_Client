@@ -48,7 +48,7 @@ public class CameraStreamView extends TextureView implements CameraStreamCallbac
 
         Canvas canvas = this.lockCanvas();
         if (canvas != null) {
-            canvas.drawBitmap(rotatedImage, 0, 0, null);
+            canvas.drawBitmap(scaledImage, 0, 0, null);
             this.unlockCanvasAndPost(canvas);
         }
     }
