@@ -15,13 +15,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.kwhy.sundayzoom.features.camera.CameraManager;
 import com.kwhy.sundayzoom.features.camera.CameraPreview;
 import com.kwhy.sundayzoom.features.camera.CameraStreamView;
+import com.kwhy.sundayzoom.features.chat.ChatTextAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private static CameraPreview cameraPreview;
 
     private List<CameraStreamView> streamViewList = new ArrayList<>();
+    private ChatTextAdapter chatTextAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         this.camera = camera;
+
+        this.chatTextAdapter = new ChatTextAdapter(this);
+        this.chatTextAdapter.addMessage("Hello");
+
+        ListView chatList = new ListView(this);
+        chatList.setAdapter(this.chatTextAdapter);
+
+        preview.addView(chatList);
     }
 
     // 앱 권한 요청에 대한 사용자의 결과를 처리
@@ -177,5 +189,15 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout streamLayout = findViewById(R.id.stream_list);
         streamLayout.removeViewInLayout(view);
         this.streamViewList.remove(streamView);
+    }
+
+    public void sendMessage(View view) {
+        EditText inputText = findViewById(R.id.message_input);
+        String message = inputText.getText().toString();
+
+        this.chatTextAdapter.addMessage(message);
+        this.chatTextAdapter.notifyDataSetChanged();
+
+        inputText.setText("");
     }
 }

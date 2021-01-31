@@ -29,7 +29,6 @@ public class CameraStreamView extends TextureView implements CameraStreamCallbac
         Bitmap drawableImage = image.copy(Bitmap.Config.ARGB_8888, true);
 
         Matrix matrix = new Matrix();
-        matrix.postRotate(90);
 
         if (isFront) {
             matrix.setScale(-1, 1);
