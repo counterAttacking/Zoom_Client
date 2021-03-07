@@ -13,6 +13,8 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 import com.kwhy.sundayzoom.features.camera.CameraManager;
 import com.kwhy.sundayzoom.features.camera.CameraPreview;
 import com.kwhy.sundayzoom.features.camera.CameraStreamView;
+import com.kwhy.sundayzoom.features.chat.ChatClient;
 import com.kwhy.sundayzoom.features.chat.ChatTextAdapter;
 
 import java.io.ByteArrayOutputStream;
@@ -33,12 +36,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_REQUEST_CAMERA = 100001;
     private static final int PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE = 100002;
+    private static final int PERMISSION_REQUEST_INTERNET = 100003;
 
     private static Camera camera;
     private static CameraPreview cameraPreview;
 
     private List<CameraStreamView> streamViewList = new ArrayList<>();
     private ChatTextAdapter chatTextAdapter;
+    private ChatClient chatClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         /*
         Android Version이 marshmallow이상인 경우
         앱 권한 요청을 진행을 하여 사용자가 런타임에 권한을 승인해야 합니다.
-        현재 SundayZoom이 요청하는 권한 : CAMERA, WRITE_EXTERNAL_STORAGE
+        현재 SundayZoom이 요청하는 권한 : CAMERA, WRITE_EXTERNAL_STORAGE, INTERNET
          */
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -57,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
             }
             if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE);
+                return;
+            }
+            if (checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.INTERNET}, PERMISSION_REQUEST_INTERNET);
                 return;
             }
         }
@@ -93,12 +102,14 @@ public class MainActivity extends AppCompatActivity {
         this.camera = camera;
 
         this.chatTextAdapter = new ChatTextAdapter(this);
-        this.chatTextAdapter.addMessage("Hello");
 
         ListView chatList = new ListView(this);
         chatList.setAdapter(this.chatTextAdapter);
 
         preview.addView(chatList);
+
+        this.chatClient = new ChatClient(this.getMessageHandler());
+        this.chatClient.send("Hi, Everyone");
     }
 
     // 앱 권한 요청에 대한 사용자의 결과를 처리
@@ -107,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case PERMISSION_REQUEST_CAMERA:
             case PERMISSION_REQUEST_WRITE_EXTERNAL_STORAGE:
+            case PERMISSION_REQUEST_INTERNET:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // 권한 승인이 처리가 된 경우 다시 그리기
                     recreate();
@@ -195,9 +207,20 @@ public class MainActivity extends AppCompatActivity {
         EditText inputText = findViewById(R.id.message_input);
         String message = inputText.getText().toString();
 
-        this.chatTextAdapter.addMessage(message);
-        this.chatTextAdapter.notifyDataSetChanged();
+        this.chatClient.send(message);
 
         inputText.setText("");
+    }
+
+    public Handler getMessageHandler() {
+        return new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                String message = (String) msg.obj;
+                chatTextAdapter.addMessage(message);
+                chatTextAdapter.notifyDataSetChanged();
+                return true;
+            }
+        });
     }
 }
