@@ -42,4 +42,8 @@ public class ChatTextAdapter extends BaseAdapter {
         message.setText(this.chatTextList.get(position));
         return message;
     }
+
+    public void updateMessage(List<String> newMessageList) {
+        this.chatTextList = newMessageList;
+    }
 }

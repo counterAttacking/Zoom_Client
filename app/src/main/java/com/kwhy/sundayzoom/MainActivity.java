@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +29,7 @@ import com.kwhy.sundayzoom.features.camera.CameraPreview;
 import com.kwhy.sundayzoom.features.camera.CameraStreamView;
 import com.kwhy.sundayzoom.features.chat.ChatClient;
 import com.kwhy.sundayzoom.features.chat.ChatTextAdapter;
+import com.kwhy.sundayzoom.features.chat.ChatUpdateEvent;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -208,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
         String message = inputText.getText().toString();
 
         this.chatClient.send(message);
-
         inputText.setText("");
     }
 
@@ -216,8 +217,19 @@ public class MainActivity extends AppCompatActivity {
         return new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
-                String message = (String) msg.obj;
-                chatTextAdapter.addMessage(message);
+                switch (msg.what) {
+                    case ChatUpdateEvent.RECEIVE_MESSAGE:
+                        String message = (String) msg.obj;
+                        chatTextAdapter.addMessage(message);
+                        break;
+                    case ChatUpdateEvent.UPDATE_MESSAGE:
+                        List<String> messageList = (List<String>) msg.obj;
+                        chatTextAdapter.updateMessage(messageList);
+                        break;
+                    default:
+                        break;
+                }
+
                 chatTextAdapter.notifyDataSetChanged();
                 return true;
             }
